@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --blue-deep: #1B3A5C;
+  --blue-mid: #2A5F8A;
+  --blue-light: #B8D9E8;
+  --blue-pale: #E8F4F9;
+  --burgundy: #6B1A1A;
+  --burgundy-dark: #4A1010;
+  --burgundy-light: #9B3535;
+  --burgundy-pale: #F5E8E8;
+  --cream: #FAFAF7;
+  --parchment: #F3F1EB;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  background: var(--cream);
+  font-family: 'Nunito', sans-serif;
+  color: #1C1C1E;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 0; height: 0; }
+* { scrollbar-width: none; }
+
+/* Hebrew text direction */
+.hebrew { direction: rtl; font-family: 'Nunito', 'Arial Hebrew', sans-serif; }
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+}
