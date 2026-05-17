@@ -16,11 +16,20 @@ interface AgendaViewProps {
 const TODAY = toDateStr(new Date());
 
 export default function AgendaView({ onEventClick, onAddEvent, location }: AgendaViewProps) {
-  const { events, members, settings, activeFilter } = useStore();
+  const { events, members, settings, activeFilter, currentMonth } = useStore();
   const [zmanim, setZmanim] = useState<Record<string, ZmanimTimes>>({});
 
-  // Generate 90 days starting from today
-  const dates = useMemo(() => getAgendaDates(TODAY, 90), []);
+  // Start from today if viewing current month, otherwise from 1st of selected month
+  const startDate = useMemo(() => {
+    const { year, month } = currentMonth;
+    const now = new Date();
+    const isCurrentMonth = year === now.getFullYear() && month === now.getMonth();
+    if (isCurrentMonth) return TODAY;
+    return `${year}-${String(month + 1).padStart(2, "0")}-01`;
+  }, [currentMonth]);
+
+  // Generate ~45 days from start date (covers full month + buffer)
+  const dates = useMemo(() => getAgendaDates(startDate, 45), [startDate]);
 
   // Compute Hebrew info for all dates (memoized)
   const hebrewInfoMap = useMemo(() => {
@@ -71,12 +80,15 @@ export default function AgendaView({ onEventClick, onAddEvent, location }: Agend
       {dates.map((dateStr) => {
         const dayEvents = getEventsForDay(dateStr);
         const info = hebrewInfoMap[dateStr];
-        // Skip days with no events and no Jewish significance (to keep agenda clean)
-        // But always show next 14 days
         const daysFromToday = Math.floor(
           (new Date(dateStr).getTime() - new Date(TODAY).getTime()) / 86400000
         );
+        // Show all days in a navigated month; for current month only show days with content past 7-day window
+        const isNavigatedMonth =
+          currentMonth.year !== new Date().getFullYear() ||
+          currentMonth.month !== new Date().getMonth();
         const hasContent =
+          isNavigatedMonth ||
           dayEvents.length > 0 ||
           info.isShabbat ||
           info.isYomTov ||
