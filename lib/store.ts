@@ -9,14 +9,28 @@ import type {
 } from "@/types";
 import { DEFAULT_LOCATION } from "@/lib/zmanim"; // eslint-disable-line @typescript-eslint/no-unused-vars
 
-// Default family colors (blue/burgundy palette + extras)
-const DEFAULT_COLORS = [
-  "#2A5F8A", // blue-mid
+// Default family colors — blue (#2A5F8A) is reserved for "Everyone"
+export const DEFAULT_COLORS = [
   "#6B1A1A", // burgundy
   "#10B981", // emerald
   "#F97316", // orange
   "#8B5CF6", // violet
   "#EC4899", // pink
+  "#EF4444", // red
+  "#14B8A6", // teal
+  "#F59E0B", // amber
+  "#84CC16", // lime
+  "#06B6D4", // cyan
+  "#A855F7", // purple
+  "#F43F5E", // rose
+  "#22C55E", // green
+  "#3B82F6", // sky-blue (distinct from Everyone's #2A5F8A)
+  "#D97706", // dark amber
+  "#7C3AED", // deep violet
+  "#0EA5E9", // light blue
+  "#BE185D", // dark pink
+  "#059669", // dark emerald
+  "#DC2626", // dark red
 ];
 
 const DEFAULT_MEMBERS: FamilyMember[] = [
@@ -127,5 +141,3 @@ export const useStore = create<StoreState>()(
     }
   )
 );
-
-export { DEFAULT_COLORS };

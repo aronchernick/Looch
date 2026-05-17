@@ -41,7 +41,7 @@ export default function CalendarPage() {
       <FamilyFilterBar />
 
       {currentView === "agenda" && (
-        <AgendaView onEventClick={setSelectedEvent} location={location} />
+        <AgendaView onEventClick={setSelectedEvent} onAddEvent={(d) => openAdd(d)} location={location} />
       )}
       {currentView === "3day" && (
         <ThreeDayView onEventClick={setSelectedEvent} />

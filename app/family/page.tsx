@@ -10,20 +10,21 @@ export default function FamilyPage() {
   const [editing, setEditing] = useState<FamilyMember | null>(null);
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
-  const [role, setRole] = useState<"parent" | "child">("child");
-  const [color, setColor] = useState(DEFAULT_COLORS[1]);
+  const [color, setColor] = useState(DEFAULT_COLORS[0]);
+
+  // Colors available for individual members (blue reserved for Everyone)
+  const MEMBER_COLORS = DEFAULT_COLORS;
 
   function startAdd() {
     setName("");
-    setRole("child");
-    setColor(DEFAULT_COLORS[members.length % DEFAULT_COLORS.length]);
+    const nonAll = members.filter((m) => m.id !== "all");
+    setColor(DEFAULT_COLORS[nonAll.length % DEFAULT_COLORS.length]);
     setAdding(true);
     setEditing(null);
   }
 
   function startEdit(m: FamilyMember) {
     setName(m.name);
-    setRole(m.role);
     setColor(m.color);
     setEditing(m);
     setAdding(false);
@@ -32,9 +33,9 @@ export default function FamilyPage() {
   function handleSave() {
     if (!name.trim()) return;
     if (editing) {
-      updateMember(editing.id, { name: name.trim(), color, role });
+      updateMember(editing.id, { name: name.trim(), color });
     } else {
-      addMember({ name: name.trim(), color, role });
+      addMember({ name: name.trim(), color, role: "parent" });
     }
     setEditing(null);
     setAdding(false);
@@ -157,29 +158,11 @@ export default function FamilyPage() {
             style={{ borderColor: "#E5E5EA" }}
           />
 
-          {/* Role */}
-          <div className="flex gap-2">
-            {(["parent", "child"] as const).map((r) => (
-              <button
-                key={r}
-                onClick={() => setRole(r)}
-                className="flex-1 py-2 rounded-xl border text-xs font-bold capitalize transition-all"
-                style={{
-                  borderColor: role === r ? "#6B1A1A" : "#E5E5EA",
-                  backgroundColor: role === r ? "#6B1A1A" : "white",
-                  color: role === r ? "white" : "#8E8E93",
-                }}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
-
           {/* Color picker */}
           <div>
             <div className="text-xs font-bold mb-2" style={{ color: "#8E8E93" }}>Color</div>
             <div className="flex gap-2 flex-wrap">
-              {DEFAULT_COLORS.map((c) => (
+              {MEMBER_COLORS.map((c) => (
                 <button
                   key={c}
                   onClick={() => setColor(c)}

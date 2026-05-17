@@ -34,9 +34,10 @@ export default function Header({ onSearch }: HeaderProps) {
       className="sticky top-0 z-30 pb-3 px-4 pt-3"
       style={{ backgroundColor: "#1B3A5C" }}
     >
-      {/* Top row: logo + actions */}
+      {/* Top row: logo centered + actions on right */}
       <div className="flex items-center justify-between mb-3">
-        <Logo size={38} />
+        <div className="w-10" /> {/* spacer to balance right icons */}
+        <Logo size={52} />
         <div className="flex items-center gap-4">
           <button
             onClick={onSearch}

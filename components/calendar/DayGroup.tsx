@@ -11,6 +11,7 @@ interface DayGroupProps {
   hebrewInfo: HebrewDayInfo;
   zmanim?: ZmanimTimes;
   onEventClick: (event: CalendarEvent) => void;
+  onDayClick?: (dateStr: string) => void;
 }
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -24,6 +25,7 @@ export default function DayGroup({
   hebrewInfo,
   zmanim,
   onEventClick,
+  onDayClick,
 }: DayGroupProps) {
   const date = new Date(dateStr + "T12:00:00");
   const dow = date.getDay();
@@ -45,8 +47,9 @@ export default function DayGroup({
     <div className="border-b-2" style={{ borderColor: "#D1D5DB" }}>
       {/* Day header */}
       <div
-        className="flex items-center gap-3 px-4 py-2 sticky top-[104px] z-10"
+        className="flex items-center gap-3 px-4 py-2 sticky top-[104px] z-10 cursor-pointer active:opacity-70"
         style={{ backgroundColor: headerBg }}
+        onClick={() => onDayClick?.(dateStr)}
       >
         {/* Date block */}
         <div className="flex flex-col items-center min-w-[36px]">

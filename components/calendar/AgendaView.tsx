@@ -9,12 +9,13 @@ import type { CalendarEvent, ZmanimTimes } from "@/types";
 
 interface AgendaViewProps {
   onEventClick: (event: CalendarEvent) => void;
+  onAddEvent?: (dateStr: string) => void;
   location: { lat: number; lng: number; tzid: string; city: string } | null;
 }
 
 const TODAY = toDateStr(new Date());
 
-export default function AgendaView({ onEventClick, location }: AgendaViewProps) {
+export default function AgendaView({ onEventClick, onAddEvent, location }: AgendaViewProps) {
   const { events, members, settings, activeFilter } = useStore();
   const [zmanim, setZmanim] = useState<Record<string, ZmanimTimes>>({});
 
@@ -98,6 +99,7 @@ export default function AgendaView({ onEventClick, location }: AgendaViewProps) 
             hebrewInfo={info}
             zmanim={zmanim[dateStr]}
             onEventClick={onEventClick}
+            onDayClick={onAddEvent}
           />
         );
       })}
