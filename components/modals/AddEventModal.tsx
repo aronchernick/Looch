@@ -31,7 +31,7 @@ export default function AddEventModal({
 
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(defaultDate ?? today);
-  const [allDay, setAllDay] = useState(true);
+  const [allDay, setAllDay] = useState(false);
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
   const [assignedTo, setAssignedTo] = useState<string[]>(["all"]);
@@ -54,7 +54,7 @@ export default function AddEventModal({
     } else {
       setTitle("");
       setDate(defaultDate ?? today);
-      setAllDay(true);
+      setAllDay(false);
       setStartTime("09:00");
       setEndTime("10:00");
       setAssignedTo(["all"]);

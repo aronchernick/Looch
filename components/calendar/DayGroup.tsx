@@ -4,7 +4,7 @@ import EventRow from "./EventRow";
 import JewishRow from "./JewishRow";
 
 interface DayGroupProps {
-  dateStr: string; // YYYY-MM-DD
+  dateStr: string;
   isToday: boolean;
   events: CalendarEvent[];
   members: FamilyMember[];
@@ -33,9 +33,19 @@ export default function DayGroup({
   const dayNum = date.getDate();
   const monthShort = MONTH_SHORT[date.getMonth()];
 
-  const headerBg = isToday ? "#FFF9E6" : hebrewInfo.isShabbat ? "#EEF0FF" : "var(--cream, #FAFAF7)";
+  const isShabbatDay = hebrewInfo.isShabbat;
+  const isErevShab = hebrewInfo.isErevShabbat;
 
-  // Sort events: all-day first, then by startTime
+  const headerBg = isToday
+    ? "#FFF9E6"
+    : isShabbatDay
+    ? "#FDF5F5"
+    : "var(--cream, #FAFAF7)";
+
+  const dowColor = isToday ? "#92400E" : "#8E8E93";
+  const numColor = isToday ? "#92400E" : isShabbatDay ? "#6B1A1A" : "#1C1C1E";
+  const dateColor = isToday ? "#92400E" : "#1C1C1E";
+
   const sorted = [...events].sort((a, b) => {
     if (a.allDay && !b.allDay) return -1;
     if (!a.allDay && b.allDay) return 1;
@@ -45,71 +55,72 @@ export default function DayGroup({
 
   return (
     <div className="border-b-2" style={{ borderColor: "#D1D5DB" }}>
-      {/* Day header */}
+      {/* Day header — no sticky (removes scroll wiggle) */}
       <div
-        className="flex items-center gap-3 px-4 py-2 sticky top-[104px] z-10 cursor-pointer active:opacity-70"
+        className="flex items-center gap-3 px-4 py-2.5 cursor-pointer active:opacity-70"
         style={{ backgroundColor: headerBg }}
         onClick={() => onDayClick?.(dateStr)}
       >
-        {/* Date block */}
-        <div className="flex flex-col items-center min-w-[36px]">
-          <span
-            className="text-[10px] font-bold uppercase tracking-wider"
-            style={{ color: isToday ? "#92400E" : "#8E8E93" }}
-          >
+        {/* Day name + number column */}
+        <div className="flex flex-col items-center w-9 shrink-0">
+          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: dowColor }}>
             {dayName}
           </span>
-          <span
-            className="text-xl font-extrabold leading-none mt-0.5"
-            style={{ color: isToday ? "#92400E" : hebrewInfo.isShabbat ? "#4338CA" : "#1C1C1E" }}
-          >
+          <span className="text-2xl font-extrabold leading-none" style={{ color: numColor }}>
             {dayNum}
           </span>
           {isToday && (
-            <span
-              className="w-1 h-1 rounded-full mt-0.5"
-              style={{ backgroundColor: "#6B1A1A" }}
-            />
+            <span className="w-1 h-1 rounded-full mt-0.5" style={{ backgroundColor: "#6B1A1A" }} />
           )}
         </div>
 
-        {/* Meta */}
+        {/* Meta — date + Hebrew date on same line + badges */}
         <div className="flex-1 min-w-0">
-          <div
-            className="text-xs font-semibold"
-            style={{ color: isToday ? "#92400E" : "#1C1C1E" }}
-          >
-            {monthShort} {dayNum}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {/* Gregorian date — bold */}
+            <span className="font-bold text-sm" style={{ color: dateColor }}>
+              {monthShort} {dayNum}
+            </span>
             {isToday && (
-              <span className="ml-2 text-[10px] font-normal opacity-70">Today</span>
+              <span className="text-[10px] font-medium opacity-60" style={{ color: dateColor }}>Today</span>
             )}
-          </div>
-          <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-            <span
-              className="text-[11px] font-semibold hebrew"
-              style={{ color: "#8A6800", direction: "rtl" }}
-            >
+            {/* Hebrew date — same line, not below */}
+            <span className="text-[11px] font-semibold hebrew" style={{ color: "#8A6800" }}>
               {hebrewInfo.hebrewDateShort}
             </span>
+            {/* Shabbos label inline */}
+            {(isShabbatDay || isErevShab) && (
+              <span className="text-[10px] font-bold" style={{ color: "#6B1A1A" }}>
+                · Shabbos
+              </span>
+            )}
+            {/* Candle lighting time inline (erev Shabbat — moved from events section) */}
+            {isErevShab && zmanim?.candleLighting && (
+              <span className="text-[10px] font-semibold" style={{ color: "#6B1A1A" }}>
+                · {zmanim.candleLighting}
+              </span>
+            )}
+            {/* Holiday badges — RC in light blue, yomtov in burgundy */}
             {hebrewInfo.holidays.map((h, i) => (
               <span
                 key={i}
                 className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
                 style={
                   h.type === "roshchodesh"
-                    ? { backgroundColor: "#D1FAE5", color: "#065F46" }
+                    ? { backgroundColor: "#DBEAFE", color: "#1E40AF" }
                     : h.type === "yomtov" || h.type === "chol_hamoed"
                     ? { backgroundColor: "#6B1A1A", color: "white" }
                     : h.type === "fast"
                     ? { backgroundColor: "#F3F4F6", color: "#6B7280" }
-                    : { backgroundColor: "#EEF0FF", color: "#4338CA" }
+                    : { backgroundColor: "#F5E8E8", color: "#6B1A1A" }
                 }
               >
                 {h.name}
               </span>
             ))}
-            {hebrewInfo.isShabbat && hebrewInfo.parsha && (
-              <span className="text-[10px] font-medium hebrew" style={{ color: "#4338CA" }}>
+            {/* Parsha in burgundy */}
+            {isShabbatDay && hebrewInfo.parsha && (
+              <span className="text-[10px] font-medium hebrew" style={{ color: "#6B1A1A" }}>
                 {hebrewInfo.parsha}
               </span>
             )}
@@ -119,16 +130,13 @@ export default function DayGroup({
 
       {/* Events + Jewish rows */}
       <div className="px-4 pb-2.5 space-y-0.5">
-        {/* Yom Tov / Shabbat */}
-        {hebrewInfo.isShabbat && (
+        {isShabbatDay && (
           <JewishRow type="shabbat" label="שבת קודש" sub={hebrewInfo.parsha} />
         )}
         {hebrewInfo.holidays.filter(h => h.type === "yomtov").map((h, i) => (
           <JewishRow key={i} type="yomtov" label={h.name} />
         ))}
-        {hebrewInfo.holidays.filter(h => h.type === "roshchodesh").map((h, i) => (
-          <JewishRow key={i} type="roshchodesh" label={h.name} />
-        ))}
+        {/* Rosh Chodesh row removed — header badge is sufficient */}
         {hebrewInfo.holidays.filter(h => h.type === "chol_hamoed").map((h, i) => (
           <JewishRow key={i} type="chol_hamoed" label={h.name} />
         ))}
@@ -139,28 +147,26 @@ export default function DayGroup({
           <JewishRow key={i} type="minor" label={h.name} />
         ))}
 
-        {/* Personal events */}
         {sorted.map((ev) => (
           <EventRow key={ev.id} event={ev} members={members} onClick={onEventClick} />
         ))}
 
-        {/* Candle lighting */}
-        {zmanim?.candleLighting && (hebrewInfo.isErevShabbat || hebrewInfo.isErevYomTov) && (
+        {/* Candle lighting — erev Shabbat now in header; keep here only for erev Yom Tov */}
+        {zmanim?.candleLighting && !isErevShab && hebrewInfo.isErevYomTov && (
           <JewishRow
             type="candle"
-            label={hebrewInfo.isYomTov && !hebrewInfo.isErevShabbat ? "הדלקת נרות (מאש קיים)" : "הדלקת נרות"}
+            label="הדלקת נרות"
             time={zmanim.candleLighting}
           />
         )}
 
         {/* Havdalah */}
-        {zmanim?.havdalah && (hebrewInfo.isShabbat || (hebrewInfo.isYomTov && !hebrewInfo.isErevShabbat)) && (
+        {zmanim?.havdalah && (isShabbatDay || (hebrewInfo.isYomTov && !isErevShab)) && (
           <JewishRow type="havdalah" label="הבדלה" time={zmanim.havdalah} />
         )}
 
-        {/* No events */}
         {sorted.length === 0 &&
-          !hebrewInfo.isShabbat &&
+          !isShabbatDay &&
           hebrewInfo.holidays.length === 0 && (
           <p className="text-[11px] italic py-1" style={{ color: "#C7C7CC" }}>
             No events

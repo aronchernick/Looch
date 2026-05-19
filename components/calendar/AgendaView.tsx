@@ -28,8 +28,8 @@ export default function AgendaView({ onEventClick, onAddEvent, location }: Agend
     return `${year}-${String(month + 1).padStart(2, "0")}-01`;
   }, [currentMonth]);
 
-  // Generate ~45 days from start date (covers full month + buffer)
-  const dates = useMemo(() => getAgendaDates(startDate, 45), [startDate]);
+  // Generate 120 days from start date — continuous scrolling across months
+  const dates = useMemo(() => getAgendaDates(startDate, 120), [startDate]);
 
   // Compute Hebrew info for all dates (memoized)
   const hebrewInfoMap = useMemo(() => {
@@ -80,27 +80,7 @@ export default function AgendaView({ onEventClick, onAddEvent, location }: Agend
       {dates.map((dateStr) => {
         const dayEvents = getEventsForDay(dateStr);
         const info = hebrewInfoMap[dateStr];
-        const daysFromToday = Math.floor(
-          (new Date(dateStr).getTime() - new Date(TODAY).getTime()) / 86400000
-        );
-        // Show all days in a navigated month; for current month only show days with content past 7-day window
-        const isNavigatedMonth =
-          currentMonth.year !== new Date().getFullYear() ||
-          currentMonth.month !== new Date().getMonth();
-        const hasContent =
-          isNavigatedMonth ||
-          dayEvents.length > 0 ||
-          info.isShabbat ||
-          info.isYomTov ||
-          info.isCholHaMoed ||
-          info.isRoshChodesh ||
-          info.isErevShabbat ||
-          info.isErevYomTov ||
-          info.holidays.length > 0 ||
-          daysFromToday < 7;
-
-        if (!hasContent) return null;
-
+        // Always show every day for continuous scrolling
         return (
           <DayGroup
             key={dateStr}
