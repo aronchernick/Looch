@@ -1,7 +1,7 @@
 "use client";
 import { useMemo } from "react";
 import { useStore } from "@/lib/store";
-import { getHebrewDayInfo, toDateStr } from "@/lib/hebcal";
+import { getHebrewDayInfo, computeDiaspora, toDateStr } from "@/lib/hebcal";
 import EventRow from "./EventRow";
 import JewishRow from "./JewishRow";
 import type { CalendarEvent } from "@/types";
@@ -31,9 +31,9 @@ export default function ThreeDayView({ onEventClick }: ThreeDayViewProps) {
 
   const hebrewInfoMap = useMemo(() => {
     const map: Record<string, ReturnType<typeof getHebrewDayInfo>> = {};
-    for (const d of dates) map[d] = getHebrewDayInfo(d, settings.diaspora);
+    for (const d of dates) map[d] = getHebrewDayInfo(d, computeDiaspora(settings.location));
     return map;
-  }, [dates, settings.diaspora]);
+  }, [dates, settings.location]);
 
   function getEventsForDay(dateStr: string): CalendarEvent[] {
     return events.filter((ev) => {

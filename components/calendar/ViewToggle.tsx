@@ -4,7 +4,6 @@ import type { CalendarView } from "@/types";
 
 const VIEWS: { value: CalendarView; label: string }[] = [
   { value: "agenda", label: "Agenda" },
-  { value: "3day", label: "3-Day" },
   { value: "month", label: "Month" },
 ];
 
@@ -14,7 +13,7 @@ export default function ViewToggle() {
   return (
     <div
       className="flex px-4 py-2 gap-1 border-b shrink-0"
-      style={{ backgroundColor: "#1B3A5C", borderColor: "#2A5F8A" }}
+      style={{ backgroundColor: "#B8D9E8", borderColor: "#1B3A5C" }}
     >
       {VIEWS.map(({ value, label }) => {
         const isActive = currentView === value;
@@ -24,8 +23,8 @@ export default function ViewToggle() {
             onClick={() => setCurrentView(value)}
             className="flex-1 py-1.5 rounded-lg text-xs font-bold transition-all"
             style={{
-              backgroundColor: isActive ? "#6B1A1A" : "rgba(255,255,255,0.08)",
-              color: isActive ? "white" : "rgba(184,217,232,0.7)",
+              backgroundColor: isActive ? "#6B1A1A" : "rgba(27,58,92,0.10)",
+              color: isActive ? "white" : "rgba(27,58,92,0.65)",
             }}
           >
             {label}

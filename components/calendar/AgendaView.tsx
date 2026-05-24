@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
-import { getAgendaDates, getHebrewDayInfo, toDateStr } from "@/lib/hebcal";
+import { getAgendaDates, getHebrewDayInfo, computeDiaspora, toDateStr } from "@/lib/hebcal";
 import { getZmanimRange } from "@/lib/zmanim";
 import DayGroup from "./DayGroup";
 import OmerStrip from "./OmerStrip";
@@ -34,9 +34,9 @@ export default function AgendaView({ onEventClick, onAddEvent, location }: Agend
   // Compute Hebrew info for all dates (memoized)
   const hebrewInfoMap = useMemo(() => {
     const map: Record<string, ReturnType<typeof getHebrewDayInfo>> = {};
-    for (const d of dates) map[d] = getHebrewDayInfo(d, settings.diaspora);
+    for (const d of dates) map[d] = getHebrewDayInfo(d, computeDiaspora(settings.location));
     return map;
-  }, [dates, settings.diaspora]);
+  }, [dates, settings.location]);
 
   // Find the current Omer day (from today's info)
   const todayInfo = hebrewInfoMap[TODAY];

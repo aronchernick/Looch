@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
 import BottomNav from "@/components/layout/BottomNav";
 import AdBanner from "@/components/layout/AdBanner";
 
@@ -15,6 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <ClerkProvider afterSignOutUrl="/">
     <html lang="he">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -32,5 +34,6 @@ export default function RootLayout({
         <BottomNav />
       </body>
     </html>
+    </ClerkProvider>
   );
 }

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useStore } from "@/lib/store";
 import { useGeolocation } from "@/lib/useGeolocation";
 import { getZmanim } from "@/lib/zmanim";
-import { getHebrewDayInfo, toDateStr } from "@/lib/hebcal";
+import { getHebrewDayInfo, computeDiaspora, toDateStr } from "@/lib/hebcal";
 import type { ZmanimTimes } from "@/types";
 import { Sun, Sunrise, Sunset, Moon, Clock } from "lucide-react";
 
@@ -21,7 +21,7 @@ export default function ZmanimPage() {
   const { settings } = useStore();
   const [zmanim, setZmanim] = useState<ZmanimTimes | null>(null);
   const [loading, setLoading] = useState(true);
-  const todayInfo = getHebrewDayInfo(TODAY, settings.diaspora);
+  const todayInfo = getHebrewDayInfo(TODAY, computeDiaspora(settings.location));
 
   useEffect(() => {
     if (!location) return;

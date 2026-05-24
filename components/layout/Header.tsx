@@ -1,5 +1,7 @@
 "use client";
 import { ChevronLeft, ChevronRight, Search, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useUser, UserButton } from "@clerk/nextjs";
 import Logo from "@/components/ui/Logo";
 import { useStore } from "@/lib/store";
 import { getMonthHebrewLabel } from "@/lib/hebcal";
@@ -16,6 +18,8 @@ const MONTHS = [
 export default function Header({ onSearch }: HeaderProps) {
   const { currentMonth, setCurrentMonth } = useStore();
   const { year, month } = currentMonth;
+  const { isSignedIn, isLoaded } = useUser();
+  const router = useRouter();
 
   function prevMonth() {
     if (month === 0) setCurrentMonth(year - 1, 11);
@@ -32,7 +36,7 @@ export default function Header({ onSearch }: HeaderProps) {
   return (
     <header
       className="sticky top-0 z-30 pb-3 px-4 pt-3"
-      style={{ backgroundColor: "#1B3A5C" }}
+      style={{ backgroundColor: "#B8D9E8" }}
     >
       {/* Top row: logo centered + actions on right */}
       <div className="flex items-center justify-between mb-3">
@@ -42,16 +46,29 @@ export default function Header({ onSearch }: HeaderProps) {
           <button
             onClick={onSearch}
             aria-label="Search"
-            className="text-blue-light/70 hover:text-white transition-colors"
+            className="text-blue-deep/70 hover:text-blue-deep transition-colors"
           >
             <Search size={20} strokeWidth={2} />
           </button>
-          <button
-            aria-label="Profile"
-            className="text-blue-light/70 hover:text-white transition-colors"
-          >
-            <User size={20} strokeWidth={2} />
-          </button>
+
+          {/* Profile: UserButton when signed in, else icon → sign-in */}
+          {isLoaded && isSignedIn ? (
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "w-7 h-7",
+                },
+              }}
+            />
+          ) : (
+            <button
+              onClick={() => router.push("/sign-in")}
+              aria-label="Sign in"
+              className="text-blue-deep/70 hover:text-blue-deep transition-colors"
+            >
+              <User size={20} strokeWidth={2} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -60,18 +77,18 @@ export default function Header({ onSearch }: HeaderProps) {
         <button
           onClick={prevMonth}
           aria-label="Previous month"
-          className="w-8 h-8 rounded-full flex items-center justify-center text-blue-light/70 hover:text-white hover:bg-white/10 transition-all"
+          className="w-8 h-8 rounded-full flex items-center justify-center text-blue-deep/70 hover:text-blue-deep hover:bg-blue-deep/10 transition-all"
         >
           <ChevronLeft size={18} strokeWidth={2.5} />
         </button>
 
         <div className="text-center">
-          <div className="text-white font-bold text-lg leading-tight">
+          <div className="font-bold text-lg leading-tight" style={{ color: "#1B3A5C" }}>
             {MONTHS[month]} {year}
           </div>
           <div
             className="text-xs font-semibold mt-0.5 hebrew"
-            style={{ color: "#B8D9E8", direction: "rtl" }}
+            style={{ color: "#1B3A5C", direction: "rtl" }}
           >
             {hebLabel}
           </div>
@@ -80,7 +97,7 @@ export default function Header({ onSearch }: HeaderProps) {
         <button
           onClick={nextMonth}
           aria-label="Next month"
-          className="w-8 h-8 rounded-full flex items-center justify-center text-blue-light/70 hover:text-white hover:bg-white/10 transition-all"
+          className="w-8 h-8 rounded-full flex items-center justify-center text-blue-deep/70 hover:text-blue-deep hover:bg-blue-deep/10 transition-all"
         >
           <ChevronRight size={18} strokeWidth={2.5} />
         </button>

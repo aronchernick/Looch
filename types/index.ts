@@ -32,7 +32,6 @@ export interface AppLocation {
 export interface AppSettings {
   familyName: string;
   location: AppLocation | null;
-  diaspora: boolean; // true = 2 days Yom Tov (Chutz L'Aretz)
   premium: boolean;
   locationDenied: boolean;
 }

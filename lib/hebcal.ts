@@ -56,6 +56,12 @@ export function toDateStr(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
+export function computeDiaspora(location?: { tzid: string } | null): boolean {
+  // Israel timezone → 1-day Yom Tov (not diaspora); everywhere else → 2-day
+  if (!location) return true;
+  return location.tzid !== "Asia/Jerusalem";
+}
+
 export function getHebrewDayInfo(dateStr: string, diaspora = true): HebrewDayInfo {
   const date = parseDate(dateStr);
   const hdate = new HDate(date);
@@ -108,7 +114,10 @@ export function getHebrewDayInfo(dateStr: string, diaspora = true): HebrewDayInf
       continue;
     }
 
-    if (mask & flags.YOM_TOV_ENDS) continue; // skip end markers
+    // Skip YOM_TOV_ENDS only when it's a pure end-marker (no CHAG).
+    // When Yom Tov falls on Shabbat (e.g. Shavuot II), @hebcal/core sets
+    // both CHAG and YOM_TOV_ENDS on the same event — don't skip those.
+    if ((mask & flags.YOM_TOV_ENDS) && !(mask & flags.CHAG)) continue;
 
     if (mask & (flags.CHOL_HAMOED)) {
       isCholHaMoed = true;

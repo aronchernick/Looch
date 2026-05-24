@@ -33,7 +33,6 @@ export default function AddEventModal({
   const [date, setDate] = useState(defaultDate ?? today);
   const [allDay, setAllDay] = useState(false);
   const [startTime, setStartTime] = useState("09:00");
-  const [endTime, setEndTime] = useState("10:00");
   const [assignedTo, setAssignedTo] = useState<string[]>(["all"]);
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
@@ -46,7 +45,6 @@ export default function AddEventModal({
       setDate(editEvent.date);
       setAllDay(editEvent.allDay);
       setStartTime(editEvent.startTime ?? "09:00");
-      setEndTime(editEvent.endTime ?? "10:00");
       setAssignedTo(editEvent.assignedTo);
       setLocation(editEvent.location ?? "");
       setNotes(editEvent.notes ?? "");
@@ -56,7 +54,6 @@ export default function AddEventModal({
       setDate(defaultDate ?? today);
       setAllDay(false);
       setStartTime("09:00");
-      setEndTime("10:00");
       setAssignedTo(["all"]);
       setLocation("");
       setNotes("");
@@ -86,7 +83,6 @@ export default function AddEventModal({
       date,
       allDay,
       startTime: allDay ? undefined : startTime,
-      endTime: allDay ? undefined : endTime,
       assignedTo,
       location: location.trim() || undefined,
       notes: notes.trim() || undefined,
@@ -180,27 +176,15 @@ export default function AddEventModal({
 
           {/* Time */}
           {!allDay && (
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="text-xs font-bold text-gray-500 block mb-1">Start</label>
-                <input
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:border-burgundy"
-                  style={{ borderColor: "#E5E5EA" }}
-                />
-              </div>
-              <div className="flex-1">
-                <label className="text-xs font-bold text-gray-500 block mb-1">End</label>
-                <input
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:border-burgundy"
-                  style={{ borderColor: "#E5E5EA" }}
-                />
-              </div>
+            <div>
+              <label className="text-xs font-bold text-gray-500 block mb-1">Time</label>
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:border-burgundy"
+                style={{ borderColor: "#E5E5EA" }}
+              />
             </div>
           )}
 

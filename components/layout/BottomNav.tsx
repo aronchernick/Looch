@@ -1,11 +1,10 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, Clock, Users, Settings } from "lucide-react";
+import { Home, Clock, Users, Settings } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/calendar", label: "Calendar", icon: Calendar },
   { href: "/zmanim", label: "Zmanim", icon: Clock },
   { href: "/family", label: "Family", icon: Users },
   { href: "/settings", label: "Settings", icon: Settings },
@@ -23,7 +22,7 @@ export default function BottomNav() {
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const isActive =
             href === "/"
-              ? pathname === "/" || pathname === "/calendar"
+              ? pathname === "/"
               : pathname.startsWith(href);
           return (
             <Link

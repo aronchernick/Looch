@@ -5,7 +5,7 @@ import type { FamilyMember } from "@/types";
 import { Plus, Pencil, Trash2, X, Check } from "lucide-react";
 
 export default function FamilyPage() {
-  const { members, addMember, updateMember, deleteMember, settings, updateSettings } = useStore();
+  const { members, addMember, updateMember, deleteMember, settings } = useStore();
 
   const [editing, setEditing] = useState<FamilyMember | null>(null);
   const [adding, setAdding] = useState(false);
@@ -56,27 +56,6 @@ export default function FamilyPage() {
         <p className="text-xs mt-0.5" style={{ color: "#B8D9E8" }}>
           {settings.familyName}
         </p>
-      </div>
-
-      {/* Diaspora toggle */}
-      <div
-        className="flex items-center justify-between px-5 py-3 border-b"
-        style={{ borderColor: "#E5E5EA", backgroundColor: "#F3F1EB" }}
-      >
-        <div>
-          <div className="text-sm font-bold" style={{ color: "#1C1C1E" }}>Outside Israel (Chutz L&apos;Aretz)</div>
-          <div className="text-xs mt-0.5" style={{ color: "#8E8E93" }}>2 days Yom Tov</div>
-        </div>
-        <button
-          onClick={() => updateSettings({ diaspora: !settings.diaspora })}
-          className="w-11 h-6 rounded-full transition-colors"
-          style={{ backgroundColor: settings.diaspora ? "#6B1A1A" : "#E5E5EA" }}
-        >
-          <span
-            className="block w-5 h-5 bg-white rounded-full shadow transition-transform mx-0.5"
-            style={{ transform: settings.diaspora ? "translateX(20px)" : "translateX(0)" }}
-          />
-        </button>
       </div>
 
       {/* Member list */}

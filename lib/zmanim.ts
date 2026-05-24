@@ -24,10 +24,23 @@ interface KZCalculator {
   getTzais(): Date | null;
 }
 
-function fmt(d: Date | null, tzid: string): string | undefined {
-  if (!d || isNaN(d.getTime())) return undefined;
+// kosher-zmanim returns Luxon DateTime objects, not native Dates
+function toNativeDate(d: unknown): Date | null {
+  if (!d) return null;
+  // Luxon DateTime has toJSDate()
+  if (typeof (d as { toJSDate?: () => Date }).toJSDate === "function") {
+    return (d as { toJSDate: () => Date }).toJSDate();
+  }
+  // Already a native Date
+  if (d instanceof Date) return d;
+  return null;
+}
+
+function fmt(d: unknown, tzid: string): string | undefined {
+  const native = toNativeDate(d);
+  if (!native || isNaN(native.getTime())) return undefined;
   try {
-    return d.toLocaleTimeString("en-US", {
+    return native.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
@@ -39,9 +52,10 @@ function fmt(d: Date | null, tzid: string): string | undefined {
 }
 
 // Candle lighting is 18 minutes before sunset (standard Ashkenaz)
-function addMinutes(d: Date | null, mins: number): Date | null {
-  if (!d) return null;
-  return new Date(d.getTime() + mins * 60_000);
+function addMinutes(d: unknown, mins: number): Date | null {
+  const native = toNativeDate(d);
+  if (!native) return null;
+  return new Date(native.getTime() + mins * 60_000);
 }
 
 let kosherZmanim: typeof import("kosher-zmanim") | null = null;

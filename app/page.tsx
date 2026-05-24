@@ -2,11 +2,11 @@
 import { useState } from "react";
 import { useStore } from "@/lib/store";
 import { useGeolocation } from "@/lib/useGeolocation";
+import { useCloudSync } from "@/lib/useCloudSync";
 import Header from "@/components/layout/Header";
 import FamilyFilterBar from "@/components/layout/FamilyFilterBar";
 import ViewToggle from "@/components/calendar/ViewToggle";
 import AgendaView from "@/components/calendar/AgendaView";
-import ThreeDayView from "@/components/calendar/ThreeDayView";
 import MonthView from "@/components/calendar/MonthView";
 import FAB from "@/components/ui/FAB";
 import AddEventModal from "@/components/modals/AddEventModal";
@@ -16,6 +16,7 @@ import type { CalendarEvent } from "@/types";
 export default function CalendarPage() {
   const { currentView } = useStore();
   const location = useGeolocation();
+  useCloudSync(); // handles auth detection + 15s polling
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
@@ -40,11 +41,8 @@ export default function CalendarPage() {
       <ViewToggle />
       <FamilyFilterBar />
 
-      {currentView === "agenda" && (
+      {(currentView === "agenda" || currentView === "3day") && (
         <AgendaView onEventClick={setSelectedEvent} onAddEvent={(d) => openAdd(d)} location={location} />
-      )}
-      {currentView === "3day" && (
-        <ThreeDayView onEventClick={setSelectedEvent} />
       )}
       {currentView === "month" && (
         <MonthView onDayClick={(d) => openAdd(d)} />

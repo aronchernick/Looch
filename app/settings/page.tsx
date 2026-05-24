@@ -1,12 +1,77 @@
 "use client";
 import { useState } from "react";
+import { useUser, useClerk } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-
-import { MapPin, RefreshCw, Star, Check } from "lucide-react";
+import { MapPin, RefreshCw, Star, Check, User, LogOut, Link2, Copy } from "lucide-react";
 
 export default function SettingsPage() {
   const { settings, updateSettings } = useStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [locationQuery, setLocationQuery] = useState("");
+  const [locationSearching, setLocationSearching] = useState(false);
+  const [locationError, setLocationError] = useState("");
+  const [inviteCopied, setInviteCopied] = useState(false);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const { isSignedIn, user } = useUser();
+  const { signOut } = useClerk();
+  const router = useRouter();
+
+  // Load invite code when the Account section is shown
+  async function loadInviteCode() {
+    if (inviteCode) return;
+    const res = await fetch("/api/family");
+    if (res.ok) {
+      const data = await res.json();
+      setInviteCode(data.family?.inviteCode ?? null);
+    }
+  }
+
+  function copyInviteCode() {
+    if (!inviteCode) return;
+    navigator.clipboard.writeText(inviteCode).then(() => {
+      setInviteCopied(true);
+      setTimeout(() => setInviteCopied(false), 2000);
+    });
+  }
+
+  async function searchLocation(e: React.FormEvent) {
+    e.preventDefault();
+    const q = locationQuery.trim();
+    if (!q) return;
+    setLocationSearching(true);
+    setLocationError("");
+    try {
+      // US ZIP code — use structured postalcode lookup for better accuracy
+      const isZip = /^\d{5}$/.test(q);
+      const url = isZip
+        ? `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(q)}&countrycodes=us&format=json&limit=1&addressdetails=1`
+        : `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&addressdetails=1`;
+      const res = await fetch(url, { headers: { "Accept-Language": "en" } });
+      const data = await res.json();
+      if (!data.length) {
+        setLocationError("Location not found. Try a city name or ZIP code.");
+        return;
+      }
+      const r = data[0];
+      const lat = parseFloat(r.lat);
+      const lng = parseFloat(r.lon);
+      const cc: string = r.address?.country_code ?? "us";
+      const tzid = estimateTzid(cc, lat, lng);
+      const city =
+        r.address?.city ??
+        r.address?.town ??
+        r.address?.village ??
+        r.address?.county ??
+        r.display_name.split(",")[0];
+      updateSettings({ location: { lat, lng, tzid, city }, locationDenied: false });
+      setLocationQuery("");
+    } catch {
+      setLocationError("Search failed. Check your connection.");
+    } finally {
+      setLocationSearching(false);
+    }
+  }
 
   function refreshLocation() {
     setRefreshing(true);
@@ -66,17 +131,32 @@ export default function SettingsPage() {
                 Enable location in your browser settings, then tap Refresh.
               </p>
             )}
+            {/* Manual city search */}
+            <form onSubmit={searchLocation} className="space-y-1.5">
+              <label className="text-xs font-bold block" style={{ color: "#8E8E93" }}>CHANGE CITY</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={locationQuery}
+                  onChange={(e) => setLocationQuery(e.target.value)}
+                  placeholder="City name or US ZIP code"
+                  className="flex-1 border rounded-xl px-3 py-2 text-sm outline-none"
+                  style={{ borderColor: "#E5E5EA" }}
+                />
+                <button
+                  type="submit"
+                  disabled={locationSearching || !locationQuery.trim()}
+                  className="px-4 py-2 rounded-xl text-sm font-bold text-white disabled:opacity-50"
+                  style={{ backgroundColor: "#1B3A5C" }}
+                >
+                  {locationSearching ? "…" : "Set"}
+                </button>
+              </div>
+              {locationError && (
+                <p className="text-xs" style={{ color: "#DC2626" }}>{locationError}</p>
+              )}
+            </form>
           </div>
-        </Section>
-
-        {/* Calendar */}
-        <Section title="Calendar">
-          <ToggleRow
-            label="Chutz L'Aretz (Diaspora)"
-            sublabel="2 days Yom Tov"
-            value={settings.diaspora}
-            onChange={(v) => updateSettings({ diaspora: v })}
-          />
         </Section>
 
         {/* Premium */}
@@ -117,7 +197,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               <ul className="space-y-1.5 text-xs" style={{ color: "#48484A" }}>
-                {["No ads — ever", "Unlimited family members", "Priority support"].map((f) => (
+                {["No ads — ever"].map((f) => (
                   <li key={f} className="flex items-center gap-2">
                     <Check size={12} color="#6B1A1A" />
                     {f}
@@ -134,6 +214,90 @@ export default function SettingsPage() {
               <p className="text-[10px] text-center" style={{ color: "#C7C7CC" }}>
                 Stripe payments integration coming in v2
               </p>
+            </div>
+          )}
+        </Section>
+
+        {/* Account */}
+        <Section title="Account">
+          {isSignedIn ? (
+            <div className="divide-y" style={{ borderColor: "#E5E5EA" }}>
+              {/* User info */}
+              <div className="px-4 py-3 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: "#E8F4F9" }}>
+                  <User size={18} color="#1B3A5C" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold truncate" style={{ color: "#1C1C1E" }}>
+                    {user?.fullName ?? user?.emailAddresses?.[0]?.emailAddress}
+                  </div>
+                  <div className="text-xs truncate" style={{ color: "#8E8E93" }}>
+                    {user?.emailAddresses?.[0]?.emailAddress}
+                  </div>
+                </div>
+              </div>
+
+              {/* Invite code */}
+              <div className="px-4 py-3">
+                <div className="text-xs font-bold mb-2" style={{ color: "#8E8E93" }}>
+                  FAMILY INVITE CODE
+                </div>
+                {inviteCode ? (
+                  <button
+                    onClick={copyInviteCode}
+                    className="flex items-center gap-2 w-full px-3 py-2 rounded-xl border"
+                    style={{ borderColor: "#E5E5EA" }}
+                  >
+                    <span className="font-mono font-bold text-lg tracking-widest flex-1" style={{ color: "#1C1C1E" }}>
+                      {inviteCode}
+                    </span>
+                    <Copy size={15} color={inviteCopied ? "#059669" : "#8E8E93"} />
+                    {inviteCopied && <span className="text-xs" style={{ color: "#059669" }}>Copied!</span>}
+                  </button>
+                ) : (
+                  <button
+                    onClick={loadInviteCode}
+                    className="flex items-center gap-2 text-sm font-semibold"
+                    style={{ color: "#1B3A5C" }}
+                  >
+                    <Link2 size={14} /> Show invite code
+                  </button>
+                )}
+                <p className="text-[10px] mt-1.5" style={{ color: "#C7C7CC" }}>
+                  Share this code with family members so they can join your synced calendar.
+                </p>
+              </div>
+
+              {/* Sign out */}
+              <button
+                onClick={() => signOut(() => router.push("/"))}
+                className="w-full px-4 py-3 flex items-center gap-2 text-sm font-semibold text-left"
+                style={{ color: "#DC2626" }}
+              >
+                <LogOut size={15} />
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <div className="px-4 py-4 space-y-3">
+              <p className="text-sm" style={{ color: "#48484A" }}>
+                Sign in to sync your calendar across devices and share it with family.
+              </p>
+              <button
+                onClick={() => router.push("/sign-in")}
+                className="w-full py-3 rounded-xl font-bold text-white"
+                style={{ backgroundColor: "#1B3A5C" }}
+              >
+                Sign in / Create account
+              </button>
+              <button
+                onClick={() => router.push("/join")}
+                className="w-full py-2.5 rounded-xl font-bold border text-sm"
+                style={{ borderColor: "#1B3A5C", color: "#1B3A5C" }}
+              >
+                Join a family with invite code
+              </button>
             </div>
           )}
         </Section>
@@ -164,32 +328,6 @@ function Section({ title, children, id }: { title: string; children: React.React
   );
 }
 
-function ToggleRow({ label, sublabel, value, onChange }: {
-  label: string;
-  sublabel?: string;
-  value: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <div className="flex items-center justify-between px-4 py-3">
-      <div>
-        <div className="text-sm font-semibold" style={{ color: "#1C1C1E" }}>{label}</div>
-        {sublabel && <div className="text-xs" style={{ color: "#8E8E93" }}>{sublabel}</div>}
-      </div>
-      <button
-        onClick={() => onChange(!value)}
-        className="w-11 h-6 rounded-full transition-colors"
-        style={{ backgroundColor: value ? "#6B1A1A" : "#E5E5EA" }}
-      >
-        <span
-          className="block w-5 h-5 bg-white rounded-full shadow transition-transform mx-0.5"
-          style={{ transform: value ? "translateX(20px)" : "translateX(0)" }}
-        />
-      </button>
-    </div>
-  );
-}
-
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between py-1">
@@ -197,4 +335,24 @@ function Row({ label, value }: { label: string; value: string }) {
       <span className="text-xs font-semibold" style={{ color: "#1C1C1E" }}>{value}</span>
     </div>
   );
+}
+
+function estimateTzid(cc: string, lat: number, lng: number): string {
+  if (cc === "il") return "Asia/Jerusalem";
+  if (cc === "gb") return "Europe/London";
+  if (cc === "fr" || cc === "be") return "Europe/Paris";
+  if (cc === "de" || cc === "ch" || cc === "at") return "Europe/Berlin";
+  if (cc === "au") return "Australia/Sydney";
+  if (cc === "za") return "Africa/Johannesburg";
+  if (cc === "ar") return "America/Argentina/Buenos_Aires";
+  if (cc === "br") return "America/Sao_Paulo";
+  if (cc === "mx") return "America/Mexico_City";
+  if (cc === "ca") return lng < -100 ? "America/Vancouver" : "America/Toronto";
+  if (cc === "us") {
+    if (lng > -75) return "America/New_York";
+    if (lng > -90) return "America/Chicago";
+    if (lng > -115) return "America/Denver";
+    return "America/Los_Angeles";
+  }
+  return "America/New_York";
 }

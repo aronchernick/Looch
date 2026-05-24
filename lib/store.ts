@@ -40,7 +40,6 @@ const DEFAULT_MEMBERS: FamilyMember[] = [
 const DEFAULT_SETTINGS: AppSettings = {
   familyName: "My Family",
   location: null,
-  diaspora: true,
   premium: false,
   locationDenied: false,
 };
@@ -69,8 +68,18 @@ interface StoreState {
   setActiveFilter: (id: string) => void;
   currentMonth: { year: number; month: number };
   setCurrentMonth: (year: number, month: number) => void;
+  // Ad dismiss
   adDismissed: boolean;
   setAdDismissed: (v: boolean) => void;
+
+  // Cloud sync state (not persisted)
+  userId: string | null;
+  setUserId: (id: string | null) => void;
+  familyId: string | null;
+  setFamilyId: (id: string | null) => void;
+  /** True once the initial cloud sync has happened this session */
+  synced: boolean;
+  setSynced: (v: boolean) => void;
 }
 
 function uid(): string {
@@ -129,14 +138,22 @@ export const useStore = create<StoreState>()(
       setCurrentMonth: (year, month) => set({ currentMonth: { year, month } }),
       adDismissed: false,
       setAdDismissed: (v) => set({ adDismissed: v }),
+
+      // Cloud sync
+      userId: null,
+      setUserId: (id) => set({ userId: id }),
+      familyId: null,
+      setFamilyId: (id) => set({ familyId: id }),
+      synced: false,
+      setSynced: (v) => set({ synced: v }),
     }),
     {
       name: "looch-storage",
-      // Only persist events, members, settings — not UI state
+      // Only persist events, members, settings — premium is not persisted (no real payment flow yet)
       partialize: (s) => ({
         events: s.events,
         members: s.members,
-        settings: s.settings,
+        settings: { ...s.settings, premium: false },
       }),
     }
   )

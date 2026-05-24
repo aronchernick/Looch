@@ -1,7 +1,7 @@
 "use client";
 import { useMemo } from "react";
 import { useStore } from "@/lib/store";
-import { getHebrewDayInfo, toDateStr } from "@/lib/hebcal";
+import { getHebrewDayInfo, computeDiaspora, toDateStr } from "@/lib/hebcal";
 import type { CalendarEvent } from "@/types";
 
 interface MonthViewProps {
@@ -58,7 +58,7 @@ export default function MonthView({ onDayClick }: MonthViewProps) {
             return <div key={idx} className="bg-gray-50 min-h-[60px]" />;
           }
           const isToday = cell.dateStr === TODAY;
-          const info = getHebrewDayInfo(cell.dateStr, settings.diaspora);
+          const info = getHebrewDayInfo(cell.dateStr, computeDiaspora(settings.location));
           const dayEvents = getEventsForDay(cell.dateStr);
           const isShabbat = new Date(cell.dateStr + "T12:00:00").getDay() === 6;
 

@@ -61,10 +61,10 @@ export default function DayGroup({
         style={{ backgroundColor: headerBg }}
         onClick={() => onDayClick?.(dateStr)}
       >
-        {/* Day name + number column */}
-        <div className="flex flex-col items-center w-9 shrink-0">
+        {/* Month + number column */}
+        <div className="flex flex-col items-center w-10 shrink-0">
           <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: dowColor }}>
-            {dayName}
+            {monthShort}
           </span>
           <span className="text-2xl font-extrabold leading-none" style={{ color: numColor }}>
             {dayNum}
@@ -77,27 +77,39 @@ export default function DayGroup({
         {/* Meta — date + Hebrew date on same line + badges */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            {/* Gregorian date — bold */}
+            {/* Day name — bold */}
             <span className="font-bold text-sm" style={{ color: dateColor }}>
-              {monthShort} {dayNum}
+              {dayName}
             </span>
             {isToday && (
               <span className="text-[10px] font-medium opacity-60" style={{ color: dateColor }}>Today</span>
             )}
-            {/* Hebrew date — same line, not below */}
+            {/* Hebrew date */}
             <span className="text-[11px] font-semibold hebrew" style={{ color: "#8A6800" }}>
               {hebrewInfo.hebrewDateShort}
             </span>
-            {/* Shabbos label inline */}
-            {(isShabbatDay || isErevShab) && (
+            {/* Friday: candle lighting inline (no Shabbos label) */}
+            {isErevShab && zmanim?.candleLighting && (
+              <span className="text-[10px] font-semibold" style={{ color: "#6B1A1A" }}>
+                · Candle lighting: {zmanim.candleLighting}
+              </span>
+            )}
+            {/* Saturday: Shabbos label inline */}
+            {isShabbatDay && (
               <span className="text-[10px] font-bold" style={{ color: "#6B1A1A" }}>
                 · Shabbos
               </span>
             )}
-            {/* Candle lighting time inline (erev Shabbat — moved from events section) */}
-            {isErevShab && zmanim?.candleLighting && (
+            {/* Saturday / end of Yom Tov: Havdalah inline */}
+            {zmanim?.havdalah && (isShabbatDay || (hebrewInfo.isYomTov && !isErevShab)) && (
               <span className="text-[10px] font-semibold" style={{ color: "#6B1A1A" }}>
-                · {zmanim.candleLighting}
+                · הבדלה: {zmanim.havdalah}
+              </span>
+            )}
+            {/* Erev Yom Tov (not Friday): candle lighting inline */}
+            {hebrewInfo.isErevYomTov && !isErevShab && zmanim?.candleLighting && (
+              <span className="text-[10px] font-semibold" style={{ color: "#6B1A1A" }}>
+                · Candle lighting: {zmanim.candleLighting}
               </span>
             )}
             {/* Holiday badges — RC in light blue, yomtov in burgundy */}
@@ -130,13 +142,8 @@ export default function DayGroup({
 
       {/* Events + Jewish rows */}
       <div className="px-4 pb-2.5 space-y-0.5">
-        {isShabbatDay && (
-          <JewishRow type="shabbat" label="שבת קודש" sub={hebrewInfo.parsha} />
-        )}
-        {hebrewInfo.holidays.filter(h => h.type === "yomtov").map((h, i) => (
-          <JewishRow key={i} type="yomtov" label={h.name} />
-        ))}
         {/* Rosh Chodesh row removed — header badge is sufficient */}
+        {/* Yom Tov row removed — header badge is sufficient */}
         {hebrewInfo.holidays.filter(h => h.type === "chol_hamoed").map((h, i) => (
           <JewishRow key={i} type="chol_hamoed" label={h.name} />
         ))}
@@ -151,19 +158,6 @@ export default function DayGroup({
           <EventRow key={ev.id} event={ev} members={members} onClick={onEventClick} />
         ))}
 
-        {/* Candle lighting — erev Shabbat now in header; keep here only for erev Yom Tov */}
-        {zmanim?.candleLighting && !isErevShab && hebrewInfo.isErevYomTov && (
-          <JewishRow
-            type="candle"
-            label="הדלקת נרות"
-            time={zmanim.candleLighting}
-          />
-        )}
-
-        {/* Havdalah */}
-        {zmanim?.havdalah && (isShabbatDay || (hebrewInfo.isYomTov && !isErevShab)) && (
-          <JewishRow type="havdalah" label="הבדלה" time={zmanim.havdalah} />
-        )}
 
         {sorted.length === 0 &&
           !isShabbatDay &&
